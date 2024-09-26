@@ -82,6 +82,19 @@ let createArray = function(x, l) {
     return(x.slice(0, l))
 }
 
+let parseData = function(x) {
+  var r;
+  if(!x) {
+    return(null) // gracefully handle null argument
+  }
+  if(x.match(/\w\s\w/)) {
+    r = x.split(/\s+/);
+  } else {
+    r = x;
+  }
+  return(r)
+}
+
 export function whatIs(sequence) {
   let sections = sequence.split(" ");
   if (sections.length === 2 && typeof Scales[sections[1]] === "string") {
@@ -225,7 +238,11 @@ export const Fretboard = function (config) {
     let pairs = sequence.split(" ");
     pairs.forEach(function (pair, i) {
       const [string, note] = pair.split(":");
-      instance.addNoteOnString(note, parseInt(string)); // , i==0? "red" : "black");
+      instance.addNoteOnString(note,  
+                               parseInt(string),
+                               instance.colors[i],
+                               instance.fillColors[i],
+                               instance.nameColors[i]); // , i==0? "red" : "black");
     });
     return instance;
   };
@@ -522,6 +539,11 @@ Fretboard.drawAll = function (selector, config) {
     } else {
       [config.startFret, config.frets] = [0, parseInt(fretdef) || 8];
     }
+    config.noteColors = parseData(e.dataset.notecolors) || null;
+    config.showNames = config.noteColors ? true : false;
+    config.fillColors = parseData(e.dataset.fillcolors) || "white";
+    config.radius = parseInt(parseData(e.dataset.radius)) || 6
+console.log(config)
     let notes = e.dataset["notes"];
     config.where = e;
 
