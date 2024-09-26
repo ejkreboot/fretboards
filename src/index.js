@@ -543,7 +543,6 @@ Fretboard.drawAll = function (selector, config) {
     config.showNames = config.noteColors ? true : false;
     config.fillColors = parseData(e.dataset.fillcolors) || "white";
     config.radius = parseInt(parseData(e.dataset.radius)) || 6
-console.log(config)
     let notes = e.dataset["notes"];
     config.where = e;
 
