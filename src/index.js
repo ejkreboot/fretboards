@@ -539,8 +539,8 @@ Fretboard.drawAll = function (selector, config) {
     } else {
       [config.startFret, config.frets] = [0, parseInt(fretdef) || 8];
     }
-    config.noteColors = parseData(e.dataset.notecolors) || null;
-    config.showNames = config.noteColors ? true : false;
+    config.nameColors = parseData(e.dataset.namecolors) || null;
+    config.showNames = config.nameColors ? true : false;
     config.fillColors = parseData(e.dataset.fillcolors) || "white";
     config.radius = parseInt(parseData(e.dataset.radius)) || 6
     let notes = e.dataset["notes"];
