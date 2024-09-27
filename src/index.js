@@ -87,7 +87,7 @@ let parseData = function(x) {
   if(!x) {
     return(null) // gracefully handle null argument
   }
-  if(x.match(/\w\s\w/)) {
+  if(x.match(/\w\s[\w#]/)) {
     r = x.split(/\s+/);
   } else {
     r = x;
@@ -166,10 +166,10 @@ export const Fretboard = function (config) {
 
   let fillColors = config.fillColors || "white"
   let nameColors = config.nameColors || "gray"
-  let lineColors = config.colors || "gray"
+  let lineColors = config.colors || null
   fillColors = createArray(fillColors, 7)
   nameColors = createArray(nameColors, 7)
-  lineColors = createArray(lineColors, 7)
+  lineColors = lineColors ? createArray(lineColors, 7) : null
 
   let instance = {
     frets: 12,
@@ -213,12 +213,12 @@ export const Fretboard = function (config) {
     return instance;
   };
 
-  instance.addNotes = function (notes, color, fill, nameColor) {
+  instance.addNotes = function (notes) {
     let allNotes = notes.split(" ");
     for (let i = 0; i < allNotes.length; i++) {
-      let showColor = color || colors[i];
-      let showFill = fill || instance.fillColors[i];
-      let showNameColor = nameColor || instance.nameColors[i];
+      let showColor = instance.colors ? instance.colors[i] : "gray";
+      let showFill = instance.fillColors[i];
+      let showNameColor = instance.nameColors[i];
       let note = allNotes[i];
       for (let octave = 1; octave < 7; octave++) {
         instance.addNote(note + octave, showColor, showFill, showNameColor);
@@ -228,7 +228,10 @@ export const Fretboard = function (config) {
   };
 
   instance.scale = function (scaleName) {
+    let lineColors = instance.colors;
+    instance.colors = lineColors ? instance.colors : colors;
     instance.addNotes(asNotes(scaleName));
+    instance.colors = lineColors;
     return instance;
   };
 
@@ -238,9 +241,10 @@ export const Fretboard = function (config) {
     let pairs = sequence.split(" ");
     pairs.forEach(function (pair, i) {
       const [string, note] = pair.split(":");
+      let col = instance.colors ? instance.colors[i] : "gray"
       instance.addNoteOnString(note,  
                                parseInt(string),
-                               instance.colors[i],
+                               col,
                                instance.fillColors[i],
                                instance.nameColors[i]); // , i==0? "red" : "black");
     });
@@ -539,6 +543,7 @@ Fretboard.drawAll = function (selector, config) {
     } else {
       [config.startFret, config.frets] = [0, parseInt(fretdef) || 8];
     }
+    config.colors = parseData(e.dataset.colors) || null;
     config.nameColors = parseData(e.dataset.namecolors) || null;
     config.showNames = config.nameColors ? true : false;
     config.fillColors = parseData(e.dataset.fillcolors) || "white";
