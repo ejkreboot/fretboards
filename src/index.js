@@ -191,6 +191,7 @@ export const Fretboard = function (config) {
     ...config,
   };
 
+  instance.radius = instance.radius || 6 // catch passing null for radius
   instance.fillColors = fillColors;
   instance.nameColors = nameColors;
   instance.colors = lineColors;
@@ -546,11 +547,11 @@ Fretboard.drawAll = function (selector, config) {
     } else {
       [config.startFret, config.frets] = [0, parseInt(fretdef) || 8];
     }
-    config.colors = parseData(e.dataset.colors) || null;
-    config.nameColors = parseData(e.dataset.namecolors) || null;
+    config.colors = parseData(e.dataset.colors) || config.colors;
+    config.nameColors = parseData(e.dataset.namecolors) || config.nameColors;
     config.showNames = config.nameColors ? true : false;
     config.fillColors = parseData(e.dataset.fillcolors) || "white";
-    config.radius = parseInt(parseData(e.dataset.radius)) || 6
+    config.radius = parseInt(parseData(e.dataset.radius)) || config.radius
     let notes = e.dataset["notes"];
     config.where = e;
 
