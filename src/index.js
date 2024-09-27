@@ -76,6 +76,9 @@ export const Scales = {
 
 let createArray = function(x, l) {
     x = [].concat(x) // guarantee we are starting with an array
+    if(x.length >= l) {
+      return(x) // supports note collections > 7 notes long with unique colors
+    }
     while(x.length < l) {
       x = x.concat(x)
     }
