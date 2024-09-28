@@ -41,6 +41,7 @@ const colors = [
   "lightgray",
 ];
 
+
 export const Scales = {
   // scales
   lydian: "c d e f# g a b",
@@ -76,9 +77,6 @@ export const Scales = {
 
 let createArray = function(x, l) {
     x = [].concat(x) // guarantee we are starting with an array
-    if(x.length >= l) {
-      return(x) // supports note collections > 7 notes long with unique colors
-    }
     while(x.length < l) {
       x = x.concat(x)
     }
@@ -161,40 +159,34 @@ export const Tunings = {
   },
 };
 
+const defaults = {
+  frets: 12,
+  startFret: 0,
+  strings: 6,
+  tuning: Tunings.guitar6.standard,
+  fretWidth: 50,
+  fretHeight: 20,
+  leftHanded: false,
+  dotRadius: 4,
+  showTitle: false,
+  showNames: false,
+  nameColors: "black",
+  fillColors: "white",
+  lineColors: null
+}
+
 export const Fretboard = function (config) {
   config = config || {};
   let where = config.where || "body";
 
   let id = "fretboard-" + Math.floor(Math.random() * 1000000);
 
-  let fillColors = config.fillColors || "white"
-  let nameColors = config.nameColors || "gray"
-  let lineColors = config.colors || null
-  fillColors = createArray(fillColors, 7)
-  nameColors = createArray(nameColors, 7)
-  lineColors = lineColors ? createArray(lineColors, 7) : null
-
   let instance = {
-    frets: 12,
-    startFret: 0,
-    strings: 6,
-    tuning: Tunings.guitar6.standard,
-    fretWidth: 50,
-    fretHeight: 20,
-    leftHanded: false,
-    notes: [],
-    radius: 6,
-    dotRadius: 4,
-    showTitle: false,
-    showNames: false,
-    nameColor: "gray",
+    ...defaults,
     ...config,
   };
-
+  instance.notes = [];
   instance.radius = instance.radius || 6 // catch passing null for radius
-  instance.fillColors = fillColors;
-  instance.nameColors = nameColors;
-  instance.colors = lineColors;
 
   // METHODS for dynamic prop changes ---------------------------
 
@@ -206,7 +198,7 @@ export const Fretboard = function (config) {
   // METHODS for managing notes ---------------------------------
 
   instance.addNoteOnString = function (note, string, color, fill, nameColor) {
-    instance.notes.push({ note, string, color, fill, nameColor });
+      instance.notes.push({ note, string, color, fill, nameColor });
     return instance;
   };
 
@@ -219,38 +211,42 @@ export const Fretboard = function (config) {
 
   instance.addNotes = function (notes) {
     let allNotes = notes.split(" ");
+    let lineColors = instance.colors ? instance.colors : colors;
+    let fillColors = createArray(instance.fillColors, allNotes.length)
+    let nameColors = createArray(instance.nameColors, allNotes.length)
+    lineColors = createArray(lineColors, allNotes.length)
+
     for (let i = 0; i < allNotes.length; i++) {
-      let showColor = instance.colors ? instance.colors[i] : "gray";
-      let showFill = instance.fillColors[i];
-      let showNameColor = instance.nameColors[i];
       let note = allNotes[i];
       for (let octave = 1; octave < 7; octave++) {
-        instance.addNote(note + octave, showColor, showFill, showNameColor);
+        instance.addNote(note + octave, lineColors[i], fillColors[i], nameColors[i]);
       }
     }
     return instance;
   };
 
   instance.scale = function (scaleName) {
-    let lineColors = instance.colors;
-    instance.colors = lineColors ? instance.colors : colors;
     instance.addNotes(asNotes(scaleName));
-    instance.colors = lineColors;
     return instance;
   };
 
   instance.placeNotes = function (sequence) {
     // Sequence of string:note
     // e.g. "6:g2 5:b2 4:d3 3:g3 2:d4 1:g4"
-    let pairs = sequence.split(" ");
+    let pairs = sequence.split(" "); 
+    // note collections should have gray outline by default 
+    // rather than the default line colors of scales.
+    let lineColors = instance.colors ? instance.colors : "gray";
+    let fillColors = createArray(instance.fillColors, pairs.length)
+    let nameColors = createArray(instance.nameColors, pairs.length)
+    lineColors = createArray(lineColors, pairs.length)
     pairs.forEach(function (pair, i) {
       const [string, note] = pair.split(":");
-      let col = instance.colors ? instance.colors[i] : "gray"
       instance.addNoteOnString(note,  
                                parseInt(string),
-                               col,
-                               instance.fillColors[i],
-                               instance.nameColors[i]); // , i==0? "red" : "black");
+                               lineColors[i],
+                               fillColors[i],
+                               nameColors[i]); // , i==0? "red" : "black");
     });
     return instance;
   };
@@ -534,28 +530,28 @@ export const Fretboard = function (config) {
   return instance.drawBoard();
 };
 
-Fretboard.drawAll = function (selector, config) {
-  config = config || {};
+export const drawAll = function (selector, config) {
   let fretboards = document.querySelectorAll(selector);
+    fretboards.forEach(function (e) {
+      let instance = config ? {...defaults, ...config,} : {...defaults};
+      let fretdef = e.dataset["frets"];
+      if (fretdef && fretdef.indexOf("-") !== -1) {
+        [instance.startFret, instance.frets] = fretdef.split("-").map(function (x) {
+          return parseInt(x);
+        });
+      } else {
+        [instance.startFret, instance.frets] = [0, parseInt(fretdef) || 8];
+      }
+      instance.colors = parseData(e.dataset.colors) || instance.colors;
+      instance.nameColors = parseData(e.dataset.namecolors) || instance.nameColors;
+      instance.showNames = e.dataset.shownames || instance.showNames;
+      instance.fillColors = parseData(e.dataset.fillcolors) || "white";
+      instance.radius = parseInt(parseData(e.dataset.radius)) || instance.radius
+      let notes = e.dataset["notes"];
+      instance.where = e;
+      let fretboard = Fretboard(instance);
+      //fretboard.clearNotes();
 
-  fretboards.forEach(function (e) {
-    let fretdef = e.dataset["frets"];
-    if (fretdef && fretdef.indexOf("-") !== -1) {
-      [config.startFret, config.frets] = fretdef.split("-").map(function (x) {
-        return parseInt(x);
-      });
-    } else {
-      [config.startFret, config.frets] = [0, parseInt(fretdef) || 8];
-    }
-    config.colors = parseData(e.dataset.colors) || config.colors;
-    config.nameColors = parseData(e.dataset.namecolors) || config.nameColors;
-    config.showNames = config.nameColors ? true : false;
-    config.fillColors = parseData(e.dataset.fillcolors) || "white";
-    config.radius = parseInt(parseData(e.dataset.radius)) || config.radius
-    let notes = e.dataset["notes"];
-    config.where = e;
-
-    let fretboard = Fretboard(config);
     if (notes) {
       fretboard.add(notes);
     }

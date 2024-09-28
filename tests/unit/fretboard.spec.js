@@ -32,9 +32,9 @@ describe("dynamic behavior", () => {
     fb.add("3:a3");
 
     expect(fb.getNotes()).toEqual([
-      { string: 6, note: "g2", color: "black" },
-      { string: 5, note: "b2", color: undefined },
-      { string: 3, note: "a3", color: undefined },
+      { string: 6, note: "g2", color: "black", fill: undefined, nameColor: undefined },
+      { string: 5, note: "b2", color: undefined, fill: undefined, nameColor: undefined  },
+      { string: 3, note: "a3", color: "gray", fill: "white", nameColor: "black"},
     ]);
   });
 
