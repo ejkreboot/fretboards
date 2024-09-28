@@ -166,8 +166,12 @@ const defaults = {
   tuning: Tunings.guitar6.standard,
   fretWidth: 50,
   fretHeight: 20,
+  fretboardColor: "white",
+  stringColors: "gray",
+  stringWidths: 1,
   leftHanded: false,
   dotRadius: 4,
+  dotColor: "#ddd",
   showTitle: false,
   showNames: false,
   nameColors: "black",
@@ -187,6 +191,7 @@ export const Fretboard = function (config) {
   };
   instance.notes = [];
   instance.radius = instance.radius || 6 // catch passing null for radius
+  instance.dotRadius = instance.dotRadius || 4 // ditto
 
   // METHODS for dynamic prop changes ---------------------------
 
@@ -311,11 +316,20 @@ export const Fretboard = function (config) {
       .attr("width", instance.width)
       .attr("height", instance.height);
 
-    if (instance.leftHanded) {
-      container = container
-        .append("g")
-        .attr("transform", "scale(-1,1) translate(-" + (instance.width-XMARGIN()) + ",0)");
-    }
+      if (instance.leftHanded) {
+        container = container
+          .append("g")
+          .attr("transform", "scale(-1,1) translate(-" + (instance.width-XMARGIN()) + ",0)");
+      }
+
+      container
+        .append("rect")
+        .attr("x", XMARGIN())
+        .attr("y", YMARGIN())
+        .attr("width",  fretboardWidth())
+        .attr("height", fretboardHeight())
+        .style("fill", instance.fretboardColor);
+
 
     return container;
   };
@@ -350,6 +364,8 @@ export const Fretboard = function (config) {
   };
 
   let drawStrings = function () {
+    let stringWidths = createArray(instance.stringWidths, instance.strings);
+    let stringColors = createArray(instance.stringColors, instance.strings);
     for (let i = 0; i < instance.strings; i++) {
       instance.svgContainer
         .append("line")
@@ -357,8 +373,8 @@ export const Fretboard = function (config) {
         .attr("y1", i * instance.fretHeight + 1 + YMARGIN())
         .attr("x2", XMARGIN() + fretboardWidth())
         .attr("y2", i * instance.fretHeight + 1 + YMARGIN())
-        .attr("stroke", "black")
-        .attr("stroke-width", 1);
+        .attr("stroke", stringColors[i])
+        .attr("stroke-width", stringWidths[i]);
     }
     let placeTuning = function (d, i) {
       return (instance.strings - i) * instance.fretHeight - 4 + "px";
@@ -412,7 +428,7 @@ export const Fretboard = function (config) {
       .attr("cx", dotX)
       .attr("cy", dotY(2))
       .attr("r", instance.dotRadius)
-      .style("fill", "#ddd");
+      .style("fill", instance.dotColor);
 
     p = instance.svgContainer.selectAll(".octave").data(fretsWithDoubleDots());
 
@@ -422,14 +438,14 @@ export const Fretboard = function (config) {
       .attr("cx", dotX)
       .attr("cy", dotY(3))
       .attr("r", instance.dotRadius)
-      .style("fill", "#ddd");
+      .style("fill", instance.dotColor);
     p.enter()
       .append("circle")
       .attr("class", "octave")
       .attr("cx", dotX)
       .attr("cy", dotY(1))
       .attr("r", instance.dotRadius)
-      .style("fill", "#ddd");
+      .style("fill", instance.dotColor);
   };
 
   instance.drawBoard = function () {
@@ -528,7 +544,7 @@ export const Fretboard = function (config) {
   };
 
   return instance.drawBoard();
-};
+}
 
 Fretboard.drawAll = function (selector, config) {
   let fretboards = document.querySelectorAll(selector);
@@ -542,11 +558,19 @@ Fretboard.drawAll = function (selector, config) {
       } else {
         [instance.startFret, instance.frets] = [0, parseInt(fretdef) || 8];
       }
+      instance.leftHanded = e.dataset.lefthanded || instance.leftHanded
       instance.colors = parseData(e.dataset.colors) || instance.colors;
       instance.nameColors = parseData(e.dataset.namecolors) || instance.nameColors;
       instance.showNames = e.dataset.shownames || instance.showNames;
-      instance.fillColors = parseData(e.dataset.fillcolors) || "white";
+      instance.fillColors = parseData(e.dataset.fillcolors) || instance.fillColors;
       instance.radius = parseInt(parseData(e.dataset.radius)) || instance.radius
+      instance.dotRadius = e.dataset.dotradius || instance.dotRadius
+      instance.dotColor = e.dataset.dotcolor || instance.dotColor
+      instance.fretboardColor = e.dataset.fretboardcolor || instance.fretboardColor
+      instance.stringColors = parseData(e.dataset.stringcolors) || instance.stringColors;
+      if(e.dataset.stringwidths) {
+        instance.stringWidths = parseData(e.dataset.stringwidths).map((x) => parseInt(x))
+      }
       let notes = e.dataset["notes"];
       instance.where = e;
       let fretboard = Fretboard(instance);
