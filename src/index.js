@@ -530,7 +530,7 @@ export const Fretboard = function (config) {
   return instance.drawBoard();
 };
 
-export const drawAll = function (selector, config) {
+Fretboard.drawAll = function (selector, config) {
   let fretboards = document.querySelectorAll(selector);
     fretboards.forEach(function (e) {
       let instance = config ? {...defaults, ...config,} : {...defaults};
