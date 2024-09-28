@@ -174,7 +174,9 @@ const defaults = {
   dotColor: "#ddd",
   showTitle: false,
   showNames: false,
+  nameSize: "6pt",
   nameColors: "black",
+  radius: 6,
   fillColors: "white",
   lineColors: null
 }
@@ -505,10 +507,12 @@ export const Fretboard = function (config) {
           .append("text")
           .text(note.substring(0, note.length - 1))
           .attr("dx", orientation * (absPitch - basePitch + 0.75) * instance.fretWidth)
-          .attr("dy", (string - 1) * instance.fretHeight + 4 + YMARGIN())
+          .attr("dy", (string - 1) * instance.fretHeight + 2 + YMARGIN())
+          .attr("dominant-baseline", "central") // keep centered at any size
           .attr("class", "fretnum")
           .style("text-anchor", "middle")
           .style("fill", actualNameColor)
+          .style("font-size", instance.nameSize)
           .attr("transform", scale)
         }
       return true;
@@ -546,6 +550,22 @@ export const Fretboard = function (config) {
   return instance.drawBoard();
 }
 
+Fretboard.getData = function(d, instance) { // parse element data elements
+  instance = instance || defaults;
+  let r = {};
+  for(var e in instance) {
+    let el = e.toLowerCase() // all element data names get lowercased
+    r[e] = d[el] || instance[e]
+    if(r[e] && r[e].match && !r[e].match(/\D/)) { // convert "14" to 14, but leave "14px" as "14px"
+      r[e] = parseInt(r[e]) || r[e]
+    }
+    if(r[e] && r[e].match && r[e].match(" ")) { // convert arrays to arrays
+      r[e] = parseData(r[e])
+    }
+  }
+  return(r)
+}
+
 Fretboard.drawAll = function (selector, config) {
   let fretboards = document.querySelectorAll(selector);
     fretboards.forEach(function (e) {
@@ -558,6 +578,9 @@ Fretboard.drawAll = function (selector, config) {
       } else {
         [instance.startFret, instance.frets] = [0, parseInt(fretdef) || 8];
       }
+      instance = Fretboard.getData(e.dataset, instance)
+      instance.colors = parseData(e.dataset.colors) || instance.colors;
+      /*
       instance.leftHanded = e.dataset.lefthanded || instance.leftHanded
       instance.colors = parseData(e.dataset.colors) || instance.colors;
       instance.nameColors = parseData(e.dataset.namecolors) || instance.nameColors;
@@ -571,8 +594,11 @@ Fretboard.drawAll = function (selector, config) {
       if(e.dataset.stringwidths) {
         instance.stringWidths = parseData(e.dataset.stringwidths).map((x) => parseInt(x))
       }
+      
+      */
       let notes = e.dataset["notes"];
       instance.where = e;
+
       let fretboard = Fretboard(instance);
       //fretboard.clearNotes();
 
