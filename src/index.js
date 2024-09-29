@@ -324,6 +324,7 @@ export const Fretboard = function (config) {
           .attr("transform", "scale(-1,1) translate(-" + (instance.width-XMARGIN()) + ",0)");
       }
 
+      /*
       container
         .append("rect")
         .attr("x", XMARGIN())
@@ -331,7 +332,7 @@ export const Fretboard = function (config) {
         .attr("width",  fretboardWidth())
         .attr("height", fretboardHeight())
         .style("fill", instance.fretboardColor);
-
+      */
 
     return container;
   };
