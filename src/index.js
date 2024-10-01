@@ -514,6 +514,7 @@ export const Fretboard = function (config) {
           .style("text-anchor", "middle")
           .style("fill", actualNameColor)
           .style("font-size", instance.nameSize)
+          .style("text-transform", "capitalize")
           .attr("transform", scale)
         }
       return true;
@@ -581,22 +582,6 @@ Fretboard.drawAll = function (selector, config) {
       }
       instance = Fretboard.getData(e.dataset, instance)
       instance.colors = parseData(e.dataset.colors) || instance.colors;
-      /*
-      instance.leftHanded = e.dataset.lefthanded || instance.leftHanded
-      instance.colors = parseData(e.dataset.colors) || instance.colors;
-      instance.nameColors = parseData(e.dataset.namecolors) || instance.nameColors;
-      instance.showNames = e.dataset.shownames || instance.showNames;
-      instance.fillColors = parseData(e.dataset.fillcolors) || instance.fillColors;
-      instance.radius = parseInt(parseData(e.dataset.radius)) || instance.radius
-      instance.dotRadius = e.dataset.dotradius || instance.dotRadius
-      instance.dotColor = e.dataset.dotcolor || instance.dotColor
-      instance.fretboardColor = e.dataset.fretboardcolor || instance.fretboardColor
-      instance.stringColors = parseData(e.dataset.stringcolors) || instance.stringColors;
-      if(e.dataset.stringwidths) {
-        instance.stringWidths = parseData(e.dataset.stringwidths).map((x) => parseInt(x))
-      }
-      
-      */
       let notes = e.dataset["notes"];
       instance.where = e;
 
