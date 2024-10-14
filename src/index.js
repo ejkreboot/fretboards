@@ -178,7 +178,11 @@ const defaults = {
   nameColors: "black",
   radius: 6,
   fillColors: "white",
-  lineColors: null
+  lineColors: null,
+  overlay: null,
+  overlayFillColors: null,
+  overlayColors: null,
+  overlayNameColors: null
 }
 
 export const Fretboard = function (config) {
@@ -267,6 +271,27 @@ export const Fretboard = function (config) {
     });
     return instance;
   };
+
+  // convenience function to add additional notes. 
+  // Useful, for example, to see specific notes (e.g. triads) in context of a scale
+  instance.addOverlay = function(notes, colors, fills, nameColors) {
+    notes = [].concat(notes) // make sure we have an array
+    colors = colors ? colors : instance.overlayColors;
+    fills = fills ? fills : instance.overlayFillColors;
+    nameColors = nameColors ? nameColors : instance.overlayNameColors;
+    colors = createArray(colors, notes.length)
+    fills = createArray(fills, notes.length)
+    nameColors = createArray(nameColors, notes.length)
+    notes.forEach((n,i) => { 
+      var [a, b] = n.split(":");
+      if(b) {
+        instance.addNoteOnString(b, parseInt(a), colors[i], fills[i], nameColors[i]);
+      }  else {
+        instance.addNote(a, colors[i], fills[i], nameColors[i]);
+      }
+    })
+    return(notes);
+  }
 
   instance.clearNotes = function () {
     instance.notes = [];
@@ -581,6 +606,7 @@ Fretboard.drawAll = function (selector, config) {
       instance = Fretboard.getData(e.dataset, instance)
       instance.colors = parseData(e.dataset.colors) || instance.colors;
       let notes = e.dataset["notes"];
+      let overlay = parseData(e.dataset["overlay"]);
       instance.where = e;
 
       let fretboard = Fretboard(instance);
@@ -589,9 +615,11 @@ Fretboard.drawAll = function (selector, config) {
     if (notes) {
       fretboard.add(notes);
     }
+    if(overlay) {
+      fretboard.addOverlay(overlay);
+    }
     fretboard.paint();
   });
-
   return fretboards;
 };
 
