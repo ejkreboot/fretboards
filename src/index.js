@@ -30,6 +30,7 @@ const allNotesEnh = [
   "bb",
   "cb",
 ];
+
 const colors = [
   "red",
   "green",
